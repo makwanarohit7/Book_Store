@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 import Footer from "../Components/Footer";
 import Header from "../Components/Header";
 import { TextField } from "@mui/material";
+import Searchbar from "../Components/Searchbar";
 function Login() {
   return (
     <div className="text-center flex-1 ">
       <Header />
+      <Searchbar />
       <p className="font-sans text-center font-bold text-2xl text-purple-600 my-7">
         Here is The Login Page
       </p>
@@ -36,13 +38,8 @@ function Login() {
         <Link to={"/"} className="text-xl text-purple-600">
           Click Here To Go Home
         </Link>
-
         <Link to={"/product-page"} className="text-xl text-purple-600">
           Click Here To Go Product Page
-        </Link>
-
-        <Link to={"/register"} className="text-xl text-purple-600">
-          Click Here To Register
         </Link>
       </div>
       <br />
