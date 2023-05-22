@@ -4,9 +4,9 @@ import Header from "../Components/Header";
 import { Link } from "react-router-dom";
 function Home() {
   return (
-    <div className="text-center">
+    <div className="">
       <Header />
-      <p className="font-sans  font-bold text-2xl text-blue-300">
+      <p className="font-sans  font-bold text-2xl text-blue-300 text-center my-7">
         Welcome to Home Page
       </p>
       <hr />
@@ -16,7 +16,7 @@ function Home() {
       </Link>
       <br />
       <br />
-      <Link to={"/register"} className="text-xl text-blue-300">
+      <Link to={"/register"} className="text-xl text-blue-300 mb-10">
         Click Here To Register
       </Link>
       <br />
