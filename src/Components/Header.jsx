@@ -1,13 +1,17 @@
 import { Button, Divider } from "@mui/material";
-import React, { useState } from "react";
-// import { logo } from "../assets";
+import React from "react";
+
 import logo from "../assets/logo.jpg";
 import { HiShoppingCart } from "react-icons/hi";
 
 import { useNavigate } from "react-router-dom";
+import { useAuthContext } from "../context/auth";
 function Header() {
   const navigate = useNavigate();
-
+  const authContext = useAuthContext();
+  const logOut = () => {
+    authContext.signOut();
+  };
   return (
     <>
       <div className="flex justify-between items-center bg-white border-t-8 border-[#f14d54]">
@@ -54,6 +58,21 @@ function Header() {
           >
             {0} cart
           </Button>
+          {authContext.user.id && (
+            <Button
+              variant="outlined"
+              sx={{
+                color: "#f14d54",
+                borderColor: "#f14d54",
+                textTransform: "capitalize",
+              }}
+              onClick={() => {
+                logOut();
+              }}
+            >
+              LogOut
+            </Button>
+          )}
         </div>
       </div>
     </>
