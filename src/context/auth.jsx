@@ -1,6 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { createContext } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import shared from "../utils/shared";
 
 const intialUserValue = {
   email: "",
@@ -39,16 +41,15 @@ export const AuthWarpper = ({ children }) => {
     if (pathname === "/login" && user.id) {
       navigate("/");
     }
-    // if (!user.id) {
-    //   return;
-    // }
-    // const access = shared.hasAccess(pathname, user);
-    // if (!access) {
-    //   toast.warning("sorry, you are not authorized to access this page");
-    //   navigate("/");
-    //   return;
-    // }
-    // navigate("/");
+    if (!user.id) {
+      return;
+    }
+    const access = shared.hasAccess(pathname, user);
+    if (!access) {
+      toast.warning("sorry, you are not authorized to access this page");
+      navigate("/");
+      return;
+    }
   }, [user, pathname]);
 
   const setUser = (user) => {
