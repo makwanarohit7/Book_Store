@@ -8,6 +8,8 @@ import UpdateProfile from "./Pages/UpdateProfile";
 import Register from "./Pages/Register";
 import Book from "./Pages/Book";
 import AddBook from "./Pages/AddBook";
+import User from "./Pages/User";
+import Categories from "./Pages/Categories";
 
 function MyNavigation() {
   const authContext = useAuthContext();
@@ -30,8 +32,13 @@ function MyNavigation() {
         path="/add-book"
         element={authContext.user.id ? <AddBook /> : Redirect}
       />
+      <Route path="/user" element={authContext.user.id ? <User /> : Redirect} />
       <Route
-        path="/edit-book/:id"
+        path="/categories"
+        element={authContext.user.id ? <Categories /> : Redirect}
+      />
+      <Route
+        path="/add-book/:id"
         element={authContext.user.id ? <AddBook /> : Redirect}
       />
       <Route
