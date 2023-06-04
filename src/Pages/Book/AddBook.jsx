@@ -12,8 +12,9 @@ import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import * as Yup from "yup";
-import bookService from "../service/book.service";
-import categoryService from "../service/category.service";
+import bookService from "../../service/book.service";
+import categoryService from "../../service/category.service";
+
 function AddBook() {
   const { id } = useParams();
 
@@ -34,10 +35,10 @@ function AddBook() {
     if (id) {
       getBookById();
     }
-
     categoryService.getAll().then((res) => {
       setCategories(res);
     });
+    // eslint-disable-next-line
   }, [id]);
 
   const getBookById = () => {

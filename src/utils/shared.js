@@ -48,8 +48,9 @@ const hasAccess = (pathname, user) => {
   }
   return true;
 };
-
+// eslint-disable-next-line
 export default {
+  messages,
   hasAccess,
   NavigationItems,
   LocalStorageKeys,

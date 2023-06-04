@@ -1,30 +1,32 @@
 import {
+  Button,
   Table,
+  TableBody,
   TableCell,
   TableContainer,
   TableHead,
-  TableRow,
-  TableBody,
-  Typography,
-  TextField,
-  Button,
   TablePagination,
+  TableRow,
+  TextField,
+  Typography,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
-
-import { defaultFilter, RecordsPerPage } from "../Constant/constant";
-import categoryService from "../service/category.service";
-import bookService from "../service/book.service";
 import { useNavigate } from "react-router-dom";
-import ConfirmationDialog from "../Components/ConfirmationDialog";
 import { toast } from "react-toastify";
-function Book() {
+import ConfirmationDialog from "../../Components/ConfirmationDialog";
+import { defaultFilter, RecordsPerPage } from "../../Constant/constant";
+import { useAuthContext } from "../../context/auth";
+import userService from "../../service/user.service";
+import shared from "../../utils/shared";
+
+function User() {
+  const navigate = useNavigate();
+  const authContext = useAuthContext();
+
   const [filters, setFilters] = useState(defaultFilter);
-  const [categories, setCategories] = useState([]);
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState(0);
-  const navigate = useNavigate();
-  const [bookRecords, setBookRecords] = useState({
+  const [userList, setUserList] = useState({
     pageIndex: 0,
     pageSize: 10,
     totalPages: 1,
@@ -33,46 +35,39 @@ function Book() {
   });
 
   useEffect(() => {
-    getAllCategories();
-  }, []);
-  const getAllCategories = async () => {
-    await categoryService.getAll().then((res) => {
-      if (res) {
-        setCategories(res);
-      }
-    });
-  };
-
-  const searchAllBooks = (filters) => {
-    bookService.getAll(filters).then((res) => {
-      setBookRecords(res);
-    });
-  };
-  // console.log("Catt : ", bookRecords);
-  useEffect(() => {
     const timer = setTimeout(() => {
       if (filters.keyword === "") delete filters.keyword;
-      searchAllBooks({ ...filters });
+      getAllUsers({ ...filters });
     }, 500);
     return () => clearTimeout(timer);
   }, [filters]);
 
-  // console.log(bookRecords);
+  const getAllUsers = async (filters) => {
+    await userService.getAllUsers(filters).then((res) => {
+      if (res) {
+        setUserList(res);
+      }
+    });
+  };
   const columns = [
-    { id: "BookName", label: "Book Name" },
-    { id: "Price", label: "Price" },
-    { id: "Category", label: "Category" },
+    { id: "FirstName", label: "First Name" },
+    { id: "LastName", label: "LastName" },
+    { id: "Email", label: "Email" },
+    { id: "roleName", label: "Role" },
   ];
-
-  const onConfirmDelete = () => {
-    bookService
-      .deleteBook(selectedId)
+  const onConfirmDelete = async () => {
+    await userService
+      .deleteUser(selectedId)
       .then((res) => {
-        toast.success(" BOOK DELETE SUCESSFULLY");
-        setOpen(false);
-        setFilters({ ...filters, pageIndex: 1 });
+        if (res) {
+          toast.success(shared.messages.DELETE_SUCCESS);
+          setOpen(false);
+          setFilters({ ...filters });
+        }
       })
-      .catch((e) => toast.error("FAIL TO DELETE"));
+      .catch((err) => {
+        toast.error(shared.messages.DELETE_FAIL);
+      });
   };
   return (
     <div className="flex-1 ml-40 mr-40">
@@ -87,10 +82,10 @@ function Book() {
           color: "#474747",
         }}
       >
-        Book Page
+        User
       </Typography>
       <div className="flex items-center justify-center m-6">
-        <div className="border-t-2 border-black w-32"></div>
+        <div className="border-t-2 border-[#f14d54] w-32"></div>
       </div>
       <div className="flex justify-end mt-11">
         <TextField
@@ -107,23 +102,6 @@ function Book() {
           }}
           sx={{ width: "280px" }}
         />
-        <Button
-          variant="contained"
-          sx={{
-            color: "white",
-            backgroundColor: "#f14d54",
-            "&:hover": {
-              backgroundColor: "#f14d54",
-            },
-            marginLeft: "8px",
-            width: "100px",
-          }}
-          onClick={() => {
-            navigate("/add-book");
-          }}
-        >
-          add
-        </Button>
       </div>
       <div className="mt-8">
         <TableContainer>
@@ -142,13 +120,12 @@ function Book() {
               </TableRow>
             </TableHead>
             <TableBody sx={{ marginTop: "20px" }}>
-              {bookRecords?.items?.map((row, index) => (
-                <TableRow key={row.id}>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.price}</TableCell>
-                  <TableCell>
-                    {categories.find((c) => c.id === row.categoryId)?.name}
-                  </TableCell>
+              {userList?.items?.map((row, index) => (
+                <TableRow key={`${row.id}-${index}`}>
+                  <TableCell>{row.firstName}</TableCell>
+                  <TableCell>{row.lastName}</TableCell>
+                  <TableCell>{row.email}</TableCell>
+                  <TableCell>{row.role}</TableCell>
                   <TableCell
                     style={{
                       display: "flex",
@@ -170,39 +147,41 @@ function Book() {
                         marginRight: "20px",
                       }}
                       onClick={() => {
-                        navigate(`/add-book/${row.id}`);
+                        navigate(`/edit-user/${row.id}`);
                       }}
                     >
                       Edit
                     </Button>
-                    <Button
-                      variant="outlined"
-                      disableElevation
-                      sx={{
-                        borderColor: "#f14d54",
-                        "&:hover": {
-                          backgroundColor: "#f14d54", // Change the hover background color
-                          color: "white",
-                        },
-                        textTransform: "capitalize",
-                        width: "90px",
-                        color: "#f14d54",
-                      }}
-                      onClick={() => {
-                        setOpen(true);
-                        setSelectedId(row.id);
-                      }}
-                    >
-                      Delete
-                    </Button>
+                    {row.id !== authContext.user.id && (
+                      <Button
+                        variant="outlined"
+                        disableElevation
+                        sx={{
+                          borderColor: "#f14d54",
+                          "&:hover": {
+                            backgroundColor: "#f14d54", // Change the hover background color
+                            color: "white",
+                          },
+                          textTransform: "capitalize",
+                          width: "90px",
+                          color: "#f14d54",
+                        }}
+                        onClick={() => {
+                          setOpen(true);
+                          setSelectedId(row.id ?? 0);
+                        }}
+                      >
+                        Delete
+                      </Button>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
-              {!bookRecords.items.length && (
+              {!userList.items.length && (
                 <TableRow className="TableRow">
                   <TableCell colSpan={5} className="TableCell">
                     <Typography align="center" className="noDataText">
-                      No Books
+                      No user
                     </Typography>
                   </TableCell>
                 </TableRow>
@@ -215,7 +194,7 @@ function Book() {
         <TablePagination
           rowsPerPageOptions={RecordsPerPage}
           component="div"
-          count={bookRecords.totalItems}
+          count={userList?.totalItems || 0}
           rowsPerPage={filters.pageSize || 0}
           page={filters.pageIndex - 1}
           onPageChange={(e, newPage) => {
@@ -235,10 +214,10 @@ function Book() {
         onClose={() => setOpen(false)}
         onConfirm={() => onConfirmDelete()}
         title="Delete book"
-        description="Are you sure you want to delete this book?"
+        description={shared.messages.USER_DELETE}
       />
     </div>
   );
 }
 
-export default Book;
+export default User;
