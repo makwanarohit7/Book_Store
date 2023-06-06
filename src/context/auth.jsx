@@ -35,6 +35,7 @@ export const AuthWarpper = ({ children }) => {
     if (!str.id) {
       navigate("/login");
     }
+    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export const AuthWarpper = ({ children }) => {
       navigate("/");
       return;
     }
+    // eslint-disable-next-line
   }, [user, pathname]);
 
   const setUser = (user) => {

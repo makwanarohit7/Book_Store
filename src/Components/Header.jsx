@@ -3,11 +3,15 @@ import React, { useMemo } from "react";
 import logo from "../assets/logo.jpg";
 import { HiShoppingCart } from "react-icons/hi";
 import { useNavigate } from "react-router-dom";
-import { useAuthContext } from "../context/auth";
+
 import shared from "../utils/shared";
+
+import { useAuthContext } from "../context/auth";
+import { useCartContext } from "../context/cart";
 const Header = () => {
   const navigate = useNavigate();
   const authContext = useAuthContext();
+  const cartContext = useCartContext();
   const logOut = () => {
     authContext.signOut();
   };
@@ -84,13 +88,23 @@ const Header = () => {
               color: "#f14d54",
               borderColor: "#f14d54",
               textTransform: "capitalize",
+              fontWeight: "bold",
             }}
             startIcon={<HiShoppingCart />}
             onClick={() => {
               navigate("/cart-page");
             }}
           >
-            {0} cart
+            {cartContext.cartData.length}
+            <span
+              style={{
+                color: "black",
+                marginLeft: "4px",
+                fontWeight: "normal",
+              }}
+            >
+              cart
+            </span>
           </Button>
           {!!authContext.user.id ? (
             <Button

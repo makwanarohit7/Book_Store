@@ -1,18 +1,17 @@
 import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuthContext } from "./context/auth";
-import CartPage from "./Pages/CartPage";
 import Home from "./Pages/Home";
 import Login from "./Pages/Login";
 import UpdateProfile from "./Pages/UpdateProfile";
 import Register from "./Pages/Register";
-
 import Book from "./Pages/Book/Book";
 import AddBook from "./Pages/Book/AddBook";
 import EditUser from "./Pages/User/EditUser";
 import User from "./Pages/User/User";
 import Categories from "./Pages/Categories/Categories";
 import AddCategories from "./Pages/Categories/AddCategories";
+import Cart from "./Pages/Cart";
 
 function MyNavigation() {
   const authContext = useAuthContext();
@@ -60,7 +59,7 @@ function MyNavigation() {
       />
       <Route
         path="/cart-page"
-        element={authContext.user.id ? <CartPage /> : Redirect}
+        element={authContext.user.id ? <Cart /> : Redirect}
       />
     </Routes>
   );
