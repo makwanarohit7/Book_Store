@@ -4,17 +4,24 @@ import { toast } from "react-toastify";
 
 import { useNavigate } from "react-router-dom";
 import cartService from "../service/cart.service";
-import { useCartContext } from "../context/cart";
+// import { useCartContext } from "../context/cart";
 import { Button, Typography } from "@mui/material";
 import shared from "../utils/shared";
 import orderService from "../service/order.service";
-import { useAuthContext } from "../context/auth";
 
-const Cart = () => {
-  const authContext = useAuthContext();
-  const cartContext = useCartContext();
+import { useSelector, useDispatch } from "react-redux";
+import { fetchCartData, removeFromCart } from "../State/Slice/cartSlice";
+import { setCartData } from "../State/Slice/cartSlice";
+
+const CartPage = () => {
+  // const authContext = useAuthContext();
+  // const cartContext = useCartContext();
+  const dispatch = useDispatch();
+  // Get the dispatch function
+  // Access the cart data from the Redux store
+  const cartData = useSelector((state) => state.cart.cartData);
   const navigate = useNavigate();
-
+  const authData = useSelector((state) => state.auth.user);
   const [cartList, setCartList] = useState([]);
   const [itemsInCart, setItemsInCart] = useState(0);
   const [totalPrice, setTotalPrice] = useState(0);
@@ -28,23 +35,69 @@ const Cart = () => {
     setTotalPrice(totalPrice);
   };
 
-  useEffect(() => {
-    setCartList(cartContext.cartData);
-    setItemsInCart(cartContext.cartData.length);
-    getTotalPrice(cartContext.cartData);
-  }, [cartContext.cartData]);
+  // useEffect(() => {
+  //   setCartList(cartContext.cartData);
+  //   setItemsInCart(cartContext.cartData.length);
+  //   getTotalPrice(cartContext.cartData);
+  // }, [cartContext.cartData]);
 
+  useEffect(() => {
+    setCartList(cartData);
+    setItemsInCart(cartData.length);
+    getTotalPrice(cartData);
+  }, [cartData]);
+
+  // const removeItem = async (id) => {
+  //   try {
+  //     const res = await cartService.removeItem(id);
+  //     if (res) {
+  //       cartContext.updateCart();
+  //     }
+  //   } catch (error) {
+  //     toast.error("Something went wrong!");
+  //   }
+  // };
   const removeItem = async (id) => {
     try {
       const res = await cartService.removeItem(id);
       if (res) {
-        cartContext.updateCart();
+        dispatch(removeFromCart(id)); // Dispatch the action to remove item from cart
       }
     } catch (error) {
       toast.error("Something went wrong!");
     }
   };
+  // const updateQuantity = async (cartItem, inc) => {
+  //   const currentCount = cartItem.quantity;
+  //   const quantity = inc ? currentCount + 1 : currentCount - 1;
+  //   if (quantity === 0) {
+  //     toast.error("Item quantity should not be zero");
+  //     return;
+  //   }
 
+  //   try {
+  //     const res = await cartService.updateItem({
+  //       id: cartItem.id,
+  //       userId: cartItem.userId,
+  //       bookId: cartItem.book.id,
+  //       quantity,
+  //     });
+  //     if (res) {
+  //       const updatedCartList = cartList.map((item) =>
+  //         item.id === cartItem.id ? { ...item, quantity } : item
+  //       );
+  //       cartContext.updateCart(updatedCartList);
+  //       const updatedPrice =
+  //         totalPrice +
+  //         (inc
+  //           ? parseInt(cartItem.book.price)
+  //           : -parseInt(cartItem.book.price));
+  //       setTotalPrice(updatedPrice);
+  //     }
+  //   } catch (error) {
+  //     toast.error("Something went wrong!");
+  //   }
+  // };
   const updateQuantity = async (cartItem, inc) => {
     const currentCount = cartItem.quantity;
     const quantity = inc ? currentCount + 1 : currentCount - 1;
@@ -64,7 +117,7 @@ const Cart = () => {
         const updatedCartList = cartList.map((item) =>
           item.id === cartItem.id ? { ...item, quantity } : item
         );
-        cartContext.updateCart(updatedCartList);
+        dispatch(setCartData(updatedCartList)); // Dispatch the action to update cart data in the Redux store
         const updatedPrice =
           totalPrice +
           (inc
@@ -77,19 +130,43 @@ const Cart = () => {
     }
   };
 
+  // const placeOrder = async () => {
+  //   if (authContext.user.id) {
+  //     const userCart = await cartService.getList(authContext.user.id);
+  //     if (userCart.length) {
+  //       try {
+  //         let cartIds = userCart.map((element) => element.id);
+  //         const newOrder = {
+  //           userId: authContext.user.id,
+  //           cartIds,
+  //         };
+  //         const res = await orderService.placeOrder(newOrder);
+  //         if (res) {
+  //           cartContext.updateCart();
+  //           navigate("/");
+  //           toast.success(shared.messages.ORDER_SUCCESS);
+  //         }
+  //       } catch (error) {
+  //         toast.error(`Order cannot be placed ${error}`);
+  //       }
+  //     } else {
+  //       toast.error("Your cart is empty");
+  //     }
+  //   }
+  // };
   const placeOrder = async () => {
-    if (authContext.user.id) {
-      const userCart = await cartService.getList(authContext.user.id);
+    if (authData.id) {
+      const userCart = await cartService.getList(authData.id);
       if (userCart.length) {
         try {
           let cartIds = userCart.map((element) => element.id);
           const newOrder = {
-            userId: authContext.user.id,
+            userId: authData.id,
             cartIds,
           };
           const res = await orderService.placeOrder(newOrder);
           if (res) {
-            cartContext.updateCart();
+            dispatch(fetchCartData(authData.id)); // Dispatch the action to fetch updated cart data
             navigate("/");
             toast.success(shared.messages.ORDER_SUCCESS);
           }
@@ -204,26 +281,48 @@ const Cart = () => {
           );
         })}
       </div>
-      <div className="flex-1">
-        <Button
-          variant="contained"
-          sx={{
-            color: "white",
-            backgroundColor: "#f14d54",
-            "&:hover": {
-              backgroundColor: "#f14d54", // Change the hover background color
-            },
-            marginTop: "50px",
-            textTransform: "capitalize",
-            fontWeight: "bold",
-          }}
-          onClick={placeOrder}
-        >
-          Place order
-        </Button>
+      <div className="flex justify-between">
+        <div className="flex-1">
+          <Button
+            variant="contained"
+            sx={{
+              color: "white",
+              backgroundColor: "#f14d54",
+              "&:hover": {
+                backgroundColor: "#f14d54", // Change the hover background color
+              },
+              marginTop: "50px",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+            }}
+            onClick={placeOrder}
+          >
+            Place order
+          </Button>
+        </div>
+        <div className="flex-1">
+          <Button
+            variant="contained"
+            sx={{
+              color: "white",
+              backgroundColor: "#f14d54",
+              "&:hover": {
+                backgroundColor: "#f14d54", // Change the hover background color
+              },
+              marginTop: "50px",
+              textTransform: "capitalize",
+              fontWeight: "bold",
+            }}
+            onClick={() => {
+              navigate("/");
+            }}
+          >
+            Continue Shopping
+          </Button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default Cart;
+export default CartPage;
